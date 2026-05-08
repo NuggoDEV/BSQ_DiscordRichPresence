@@ -65,7 +65,7 @@ If your Discord client is closed or not installed, it'll instead open up a page 
 
 1. Open Beat Saber on your Quest
 2. Go to `Settings → Mod Settings → DRP`
-3. Enter your PC's [private IP](https://github.com/RainzDev/BSQ_DiscordRichPresence?tab=readme-ov-file#finding-your-private-ip) and port (Leave port as it is unless you know what you're doing)
+3. Enter your PC's [private IP](https://github.com/RainzDev/BSQ_DiscordRichPresence?tab=readme-ov-file#finding-your-private-ip) and port. (The port must be set as `8080` unless you know what you're doing)
 4. Press "Ok"
 
 Please note that if the Quest doesn't manage to connect to your server, look over these:
