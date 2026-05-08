@@ -10,6 +10,7 @@
 #include "web-utils/shared/WebUtils.hpp"
 
 #include "bsml/shared/BSML.hpp"
+#include "bsml/shared/Helpers/getters.hpp"
 
 #include <span>
 #include <cstdint>
@@ -34,6 +35,8 @@
 #include <string_view>
 #include <thread>
 
+#include "GlobalNamespace/UnifiedNetworkPlayerModel.hpp"
+#include "GlobalNamespace/IUnifiedNetworkPlayerModel.hpp"
 
 #include "GlobalNamespace/PauseMenuManager.hpp"
 #include "GlobalNamespace/LevelCompletionResults.hpp"
@@ -61,6 +64,7 @@
 #include "GlobalNamespace/LobbyPlayersDataModel.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 
+#include "GlobalNamespace/MultiplayerModeSelectionFlowCoordinator.hpp"
 #include "GlobalNamespace/MainMenuViewController.hpp"
 #include "GlobalNamespace/SongStartSyncController.hpp"
 #include "GlobalNamespace/MultiplayerResultsViewController.hpp"
@@ -70,12 +74,15 @@
 #include "GlobalNamespace/ResultsViewController.hpp"
 #include "GlobalNamespace/MainMenuViewController.hpp"
 
+#include "Zenject/DiContainer.hpp"
+
 using namespace GlobalNamespace;
 
 bool skipNextActivation = false;
 bool inGameplay = false;
 ::GlobalNamespace::BeatmapLevel* getBeatmapLevel;
 BeatmapDifficulty getDifficulty;
+
 
 std::string difficultyToString(GlobalNamespace::BeatmapDifficulty difficulty)
 {
@@ -132,15 +139,23 @@ void CreateRequest(std::string jsonStr) {
     }).detach();
 }
 
+
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSessionManager::HandlePlayerConnected, void, GlobalNamespace::MultiplayerSessionManager* self, GlobalNamespace::IConnectedPlayer* player) {
     MultiplayerSessionManager_HandlePlayerConnected(self, player);
 
     auto getCount = self->get_connectedPlayerCount();
+    auto maxPlayerCount = self->get_maxPlayerCount();
+
+
+    auto lobbyCode = BSML::Helpers::GetMainFlowCoordinator()->_multiplayerModeSelectionFlowCoordinator->_gameServerLobbyFlowCoordinator->____unifiedNetworkPlayerModel->get_code();
+
 
     if (!inGameplay) {
         nlohmann::json data;
         data["type"] = "LobbyPlayerOnConnect";
         data["playerCount"] = getCount + 1;
+        data["maxPlayerCount"] = maxPlayerCount;
+        data["lobbyCode"] = lobbyCode;
 
         std::string jsonStr = data.dump();
         CreateRequest(jsonStr);

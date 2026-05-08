@@ -4,6 +4,7 @@
 #include "bsml/shared/BSML.hpp"
 #include "UnityEngine/Application.hpp"
 #include "GlobalNamespace/MainMenuViewController.hpp"
+#include "GlobalNamespace/MultiplayerLobbyConnectionController.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 
 using namespace GlobalNamespace;
@@ -16,6 +17,7 @@ void DidActivate(HMUI::ViewController* self, bool firstActivation, bool addedToH
 
     AddConfigValueInputString(container, getConfig().PCIPSetting);
     AddConfigValueInputString(container, getConfig().PortSetting);
+
 
     BSML::Lite::CreateUIButton(container, "Open Instructions", []() {
         UnityEngine::Application::OpenURL("https://github.com/RainzDev/BSQ_DiscordRichPresence#-quick-start");
