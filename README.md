@@ -23,13 +23,13 @@ Download and install the mod using your preferred Quest mod manager:
 
 ### 2. Install Local Server
 
-- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI/releases/download/v1.1.3/bridgeapi-linux)
-- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI/releases/download/v1.1.3/bridgeapi-windows.exe)
-- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI/releases/download/v1.1.3/bridgeapi-macos)
+- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.0/BeatSaberBridgeAPI.CPP-linux)
+- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.0/BeatSaberBridgeAPI.CPP-windows.exe)
+- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.0/BeatSaberBridgeAPI.CPP-macos)
 
 ### 3. Start the Server
 
-Note: Please make sure your Discord app is opened.
+Note: This can be opened without needing your Discord client opened, as this is using Discord's Social SDK instead of Game SDK.
 
 <details>
 <summary><b>🪟 Windows (CMD)</b></summary>
@@ -54,6 +54,12 @@ chmod +x bridgeapi-linux
 ./bridgeapi-linux
 ```
 </details>
+
+### 4. Authorize to RPC
+
+Once the server is running, you should see a pop-up on your Discord client asking you to authorize. Make sure to click "Authorize".
+
+If your Discord client is closed or not installed, it'll instead open up a page in your default browser.
 
 ### 4. Configure the Mod
 
