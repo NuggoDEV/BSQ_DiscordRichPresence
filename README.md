@@ -23,9 +23,9 @@ Download and install the mod using your preferred Quest mod manager:
 
 ### 2. Install Local Server
 
-- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.0/BeatSaberBridgeAPI.CPP-linux)
-- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.0/BeatSaberBridgeAPI.CPP-windows.exe)
-- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.0/BeatSaberBridgeAPI.CPP-macos)
+- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-linux)
+- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-windows.exe)
+- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-macos)
 
 ### 3. Start the Server
 
@@ -34,24 +34,30 @@ Note: This can be opened without needing your Discord client opened, as this is 
 <details>
 <summary><b>🪟 Windows (CMD)</b></summary>
 
-You can simply just double click the exe file to open it. (Please note that Windows Defender might flag it. This is due to the file not having a certificate.)
+Extract the zip file and then open it. You can then simply just double click the exe file to open it. (Please note that Windows Defender might flag it. This is due to the file not having a certificate.)
 </details>
 
 <details>
 <summary><b>🍎 macOS (Terminal)</b></summary>
 
+Extract the zip folder, and then run these commands.
+
 ```bash
-chmod +x bridgeapi-macos
-./bridgeapi-macos
+cd BeatSaberBridgeAPI.CPP-macos
+chmod +x BeatSaberBridgeAPI.CPP
+./BeatSaberBridgeAPI.CPP
 ```
 </details>
 
 <details>
 <summary><b>🐧 Linux</b></summary>
 
+Extract the zip folder, and then run these commands.
+
 ```bash
-chmod +x bridgeapi-linux
-./bridgeapi-linux
+cd BeatSaberBridgeAPI.CPP-linux
+chmod +x BeatSaberBridgeAPI.CPP
+./BeatSaberBridgeAPI.CPP
 ```
 </details>
 
@@ -61,7 +67,7 @@ Once the server is running, you should see a pop-up on your Discord client askin
 
 If your Discord client is closed or not installed, it'll instead open up a page in your default browser.
 
-### 4. Configure the Mod
+### 5. Configure the Mod
 
 1. Open Beat Saber on your Quest
 2. Go to `Settings → Mod Settings → DRP`
@@ -74,7 +80,7 @@ Please note that if the Quest doesn't manage to connect to your server, look ove
 - Both must be using the same network
 - Firewall must not be blocking
 
-### 5. Verify Connection
+### 6. Verify Connection
 
 Check your server console and you should see events showing up while you're doing something on Beat Saber.
 
