@@ -23,9 +23,9 @@ Download and install the mod using your preferred Quest mod manager:
 
 ### 2. Install Local Server
 
-- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-linux)
-- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-windows.exe)
-- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-macos)
+- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-linux.zip)
+- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-windows.zip)
+- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.2/BeatSaberBridgeAPI.CPP-macos.zip)
 
 ### 3. Start the Server
 
