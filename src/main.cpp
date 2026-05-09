@@ -173,7 +173,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
 
     if (!inGameplay) {
         nlohmann::json data;
-        data["type"] = "LobbyPlayerOnDisonnect";
+        data["type"] = "LobbyPlayerOnDisconnect";
         data["playerCount"] = getCount;
         data["maxPlayerCount"] = maxPlayerCount;
         data["lobbyCode"] = lobbyCode;
