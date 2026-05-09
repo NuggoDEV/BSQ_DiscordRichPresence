@@ -186,13 +186,6 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
 MAKE_HOOK_MATCH(LevelCollectionViewController_DidActivate, &GlobalNamespace::LevelCollectionViewController::DidActivate, void, GlobalNamespace::LevelCollectionViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
     LevelCollectionViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 
-    if (skipNextActivation) {
-        skipNextActivation = false;
-        return;
-    }
-
-    if (!screenSystemEnabling) return;
-
     nlohmann::json data;
     data["type"] = "LevelSelectionMenuInitialized";
 
