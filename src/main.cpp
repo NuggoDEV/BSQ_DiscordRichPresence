@@ -73,6 +73,7 @@
 #include "GlobalNamespace/LevelSelectionNavigationController.hpp"
 #include "GlobalNamespace/ResultsViewController.hpp"
 #include "GlobalNamespace/MainMenuViewController.hpp"
+#include "GlobalNamespace/ConnectedPlayerManager.hpp"
 
 #include "Zenject/DiContainer.hpp"
 
@@ -143,7 +144,7 @@ void CreateRequest(std::string jsonStr) {
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSessionManager::HandlePlayerConnected, void, GlobalNamespace::MultiplayerSessionManager* self, GlobalNamespace::IConnectedPlayer* player) {
     MultiplayerSessionManager_HandlePlayerConnected(self, player);
 
-    auto getCount = self->get_connectedPlayerCount();
+    auto getCount = self->_connectedPlayerManager->connectedPlayerCount;
     auto maxPlayerCount = self->get_maxPlayerCount();
 
 
@@ -153,7 +154,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSes
     if (!inGameplay) {
         nlohmann::json data;
         data["type"] = "LobbyPlayerOnConnect";
-        data["playerCount"] = getCount + 1;
+        data["playerCount"] = getCount;
         data["maxPlayerCount"] = maxPlayerCount;
         data["lobbyCode"] = lobbyCode;
 
@@ -165,12 +166,17 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSes
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &MultiplayerSessionManager::HandlePlayerDisconnected, void, GlobalNamespace::MultiplayerSessionManager* self, GlobalNamespace::IConnectedPlayer* player) {
     MultiplayerSessionManager_HandlePlayerDisconnected(self, player);
 
-    auto getCount = self->get_connectedPlayerCount();
+    auto getCount = self->_connectedPlayerManager->connectedPlayerCount;
+    auto maxPlayerCount = self->get_maxPlayerCount();
+
+    auto lobbyCode = BSML::Helpers::GetMainFlowCoordinator()->_multiplayerModeSelectionFlowCoordinator->_gameServerLobbyFlowCoordinator->____unifiedNetworkPlayerModel->get_code();
 
     if (!inGameplay) {
         nlohmann::json data;
         data["type"] = "LobbyPlayerOnDisonnect";
-        data["playerCount"] = getCount + 1;
+        data["playerCount"] = getCount;
+        data["maxPlayerCount"] = maxPlayerCount;
+        data["lobbyCode"] = lobbyCode;
 
         std::string jsonStr = data.dump();
         CreateRequest(jsonStr);
