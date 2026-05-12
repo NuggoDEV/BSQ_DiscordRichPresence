@@ -105,7 +105,7 @@ std::string difficultyToString(GlobalNamespace::BeatmapDifficulty difficulty)
 }
 
 void CreateRequest(std::string URLPath, nlohmann::json jsonData) {
-    std::thread([URLPath, jsonData] {
+    std::thread([URLPath, jsonData]() -> WebUtils::StringResponse {
         const std::string getIp = getConfig().PCIPSetting.GetValue();
         const std::string getPort = getConfig().PortSetting.GetValue();
 
@@ -137,8 +137,9 @@ void CreateRequest(std::string URLPath, nlohmann::json jsonData) {
         bool success = responseValue.IsSuccessful();
         if (!success) {
             logger.debug("Failed to get response");
-            return;
         }
+
+        return responseValue;
     }).detach();
 }
 
