@@ -104,12 +104,14 @@ std::string difficultyToString(GlobalNamespace::BeatmapDifficulty difficulty)
     }
 }
 
-void CreateRequest(std::string jsonStr) {
-    std::thread([jsonStr] {
+void CreateRequest(std::string URLPath, nlohmann::json jsonData) {
+    std::thread([URLPath, jsonData] {
         const std::string getIp = getConfig().PCIPSetting.GetValue();
         const std::string getPort = getConfig().PortSetting.GetValue();
 
-        const std::string URL = "http://" + getIp + ":" + getPort + "/sendData";
+        const std::string URL = "http://" + getIp + ":" + getPort + URLPath;
+
+        std::string jsonStr = jsonData.dump();
 
         WebUtils::URLOptions path{ URL };
         path.noEscape = true;
@@ -146,20 +148,27 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSes
 
     auto getCount = self->_connectedPlayerManager->connectedPlayerCount;
     auto maxPlayerCount = self->get_maxPlayerCount();
-
+    auto getLocalPlayer = self->get_localPlayer();
 
     auto lobbyCode = BSML::Helpers::GetMainFlowCoordinator()->_multiplayerModeSelectionFlowCoordinator->_gameServerLobbyFlowCoordinator->____unifiedNetworkPlayerModel->get_code();
 
 
     if (!inGameplay) {
+        if (player == getLocalPlayer) {
+            nlohmann::json data;
+            data["type"] = "LobbyLocalPlayerOnConnect";
+
+            CreateRequest("/sendData", data);
+
+            return;
+        }
         nlohmann::json data;
         data["type"] = "LobbyPlayerOnConnect";
         data["playerCount"] = getCount;
         data["maxPlayerCount"] = maxPlayerCount;
         data["lobbyCode"] = lobbyCode;
 
-        std::string jsonStr = data.dump();
-        CreateRequest(jsonStr);
+        CreateRequest("/sendData", data);
     }
 }
 
@@ -168,18 +177,26 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
 
     auto getCount = self->_connectedPlayerManager->connectedPlayerCount;
     auto maxPlayerCount = self->get_maxPlayerCount();
+    auto getLocalPlayer = self->get_localPlayer();
 
     auto lobbyCode = BSML::Helpers::GetMainFlowCoordinator()->_multiplayerModeSelectionFlowCoordinator->_gameServerLobbyFlowCoordinator->____unifiedNetworkPlayerModel->get_code();
 
     if (!inGameplay) {
+        if (player == getLocalPlayer) {
+            nlohmann::json data;
+            data["type"] = "LobbyLocalPlayerOnDisconnect";
+
+            CreateRequest("/sendData", data);
+
+            return;
+        }
         nlohmann::json data;
         data["type"] = "LobbyPlayerOnDisconnect";
         data["playerCount"] = getCount;
         data["maxPlayerCount"] = maxPlayerCount;
         data["lobbyCode"] = lobbyCode;
 
-        std::string jsonStr = data.dump();
-        CreateRequest(jsonStr);
+        CreateRequest("/sendData", data);
     }
 }
 
@@ -189,8 +206,7 @@ MAKE_HOOK_MATCH(LevelCollectionViewController_DidActivate, &GlobalNamespace::Lev
     nlohmann::json data;
     data["type"] = "LevelSelectionMenuInitialized";
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MainFlowCoordinator_DidActivate, &GlobalNamespace::MainFlowCoordinator::DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -199,8 +215,7 @@ MAKE_HOOK_MATCH(MainFlowCoordinator_DidActivate, &GlobalNamespace::MainFlowCoord
     nlohmann::json data;
     data["type"] = "MainMenuInitialized";
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MenuTransitionsHelper_StartStandardLevel,
@@ -289,15 +304,12 @@ MAKE_HOOK_MATCH(MenuTransitionsHelper_StartStandardLevel,
     data["mappers"] = level->allMappers;
     data["difficulty"] = difficultyToString(difficulty);
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(SongStartSyncController_StartSong, &SongStartSyncController::StartSong, void, SongStartSyncController *self, PlayersSpecificSettingsAtGameStartModel* playersSpecificSettingsAtGameStartModel, ::StringW sessionGameId) {
     SongStartSyncController_StartSong(self, playersSpecificSettingsAtGameStartModel, sessionGameId);
     auto sessionManager = self->_multiplayerSessionManager;
-
-    logger.debug("SongStartSyncController_StartSong called, session manager is null: {}", sessionManager == nullptr);
 
     inGameplay = true;
 
@@ -314,8 +326,7 @@ MAKE_HOOK_MATCH(SongStartSyncController_StartSong, &SongStartSyncController::Sta
         data["type"] = "MultiplayerBeatmapInitialized";
     }
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MenuTransitionsHelper_StartMultiplayerLevel, static_cast<
@@ -380,8 +391,7 @@ MAKE_HOOK_MATCH(PauseController_Pause, &PauseController::Pause, void, PauseContr
     nlohmann::json data;
     data["type"] = "BeatmapPaused";
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &PauseController::HandlePauseMenuManagerDidPressContinueButton, void, PauseController *self) {
@@ -390,8 +400,7 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &P
     nlohmann::json data;
     data["type"] = "BeatmapResumed";
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(PauseMenuManager_MenuButtonPressed, &PauseMenuManager::MenuButtonPressed, void, PauseMenuManager *self) {
@@ -405,8 +414,7 @@ MAKE_HOOK_MATCH(StandardLevelGameplayManager_HandleGameEnergyDidReach0, &Standar
     nlohmann::json data;
     data["type"] = "BeatmapFailed";
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MultiplayerLocalActivePlayerGameplayAnimator_TransitionIntoFailedState, &MultiplayerLocalActivePlayerGameplayAnimator::TransitionIntoFailedState, void, MultiplayerLocalActivePlayerGameplayAnimator *self) {
@@ -420,8 +428,7 @@ MAKE_HOOK_MATCH(MultiplayerLocalActivePlayerGameplayAnimator_TransitionIntoFaile
     data["mappers"] = getBeatmapLevel->allMappers;
     data["difficulty"] = difficultyToString(getDifficulty);
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MultiplayerResultsViewController_DidActivate, &MultiplayerResultsViewController::DidActivate, void, MultiplayerResultsViewController *self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -432,8 +439,7 @@ MAKE_HOOK_MATCH(MultiplayerResultsViewController_DidActivate, &MultiplayerResult
     nlohmann::json data;
     data["type"] = "MultiplayerBeatmapFinished";
 
-    std::string jsonStr = data.dump();
-    CreateRequest(jsonStr);
+    CreateRequest("/sendData", data);
 }
 
 MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidActivate, void, ResultsViewController *self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -452,8 +458,7 @@ MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidAc
         data["mappers"] = level->allMappers;
         data["difficulty"] = difficultyToString(difficulty);
 
-        std::string jsonStr = data.dump();
-        CreateRequest(jsonStr);
+        CreateRequest("/sendData", data);
     }
 }
 
