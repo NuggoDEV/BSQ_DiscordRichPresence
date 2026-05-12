@@ -55,10 +55,35 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
         return;
     }
 
-    WebUtils::StringResponse getVersion = CreateRequest("GET", "/version", {});
+    WebUtils::JsonResponse response = CreateRequest("GET", "/version", {});
 
-    if (getVersion.IsSuccessful()) {
-        auto data = getVersion.GetParsedData();
+    if (response.IsSuccessful()) {
+        std::string version = response.GetParsedData()["version"].GetString();
+
+        if (version != "0.1.4") {
+            auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
+
+            auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
+
+            auto text = BSML::Lite::CreateText(verticalLayout, "It seems like you're using an outdated version of the local server. Please update it to latest whenever you can.");
+    
+            text->set_enableWordWrapping(true);
+            text->set_alignment(TMPro::TextAlignmentOptions::Center);
+
+            auto horizontalLayout = BSML::Lite::CreateHorizontalLayoutGroup(verticalLayout);
+
+            BSML::Lite::CreateUIButton(horizontalLayout, "Update", [modal]() {
+                CreateRequest("POST", "update", {});
+                modal->Hide();
+            });
+            BSML::Lite::CreateUIButton(horizontalLayout, "Close", [modal]() {
+                modal->Hide();
+            });
+
+            modal->Show();
+
+            return;
+        }
     } else {
         logger.debug("Failed to retrieve version.");
 
@@ -66,7 +91,7 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
 
         auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
 
-        auto text = BSML::Lite::CreateText(verticalLayout, "Your local server could not be updated due to changes made. Please\nopen the instructions to download the new version of the local server");
+        auto text = BSML::Lite::CreateText(verticalLayout, "Your local server could not be updated due to not being able to connect. Please\nopen the instructions to download the new version of the local server");
     
         text->set_enableWordWrapping(true);
         text->set_alignment(TMPro::TextAlignmentOptions::Center);

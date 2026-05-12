@@ -7,8 +7,8 @@
 
 #include <stdexcept>
 
-WebUtils::StringResponse CreateRequest(std::string method, std::string URLPath, nlohmann::json jsonData) {
-    std::thread([method, URLPath, jsonData]() -> WebUtils::StringResponse {
+WebUtils::JsonResponse CreateRequest(std::string method, std::string URLPath, nlohmann::json jsonData) {
+    std::thread([method, URLPath, jsonData]() -> WebUtils::JsonResponse {
         const std::string getIp = getConfig().PCIPSetting.GetValue();
         const std::string getPort = getConfig().PortSetting.GetValue();
 
@@ -24,12 +24,12 @@ WebUtils::StringResponse CreateRequest(std::string method, std::string URLPath, 
             jsonStr.size()
         );
 
-        std::future<WebUtils::StringResponse> response;
+        std::future<WebUtils::JsonResponse> response;
 
         if (method == "GET") {
-            response = WebUtils::GetAsync<WebUtils::StringResponse>(path);
+            response = WebUtils::GetAsync<WebUtils::JsonResponse>(path);
         } else if (method == "POST") {
-            response = WebUtils::PostAsync<WebUtils::StringResponse>(path, body);
+            response = WebUtils::PostAsync<WebUtils::JsonResponse>(path, body);
         } else {
             throw std::runtime_error("Invalid method for request");
         }
