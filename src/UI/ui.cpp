@@ -73,7 +73,7 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
             auto horizontalLayout = BSML::Lite::CreateHorizontalLayoutGroup(verticalLayout);
 
             BSML::Lite::CreateUIButton(horizontalLayout, "Update", [modal]() {
-                CreateRequest("POST", "update", {});
+                CreateRequest("POST", "/update", {});
                 modal->Hide();
             });
             BSML::Lite::CreateUIButton(horizontalLayout, "Close", [modal]() {
