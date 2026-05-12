@@ -3,6 +3,7 @@
 #include "nlohmann/json.hpp"
 #include "config.hpp"
 #include "UI/ui.hpp"
+#include "utils/Requests/requests.hpp"
 
 #include "config.h"
 
@@ -104,45 +105,6 @@ std::string difficultyToString(GlobalNamespace::BeatmapDifficulty difficulty)
     }
 }
 
-void CreateRequest(std::string URLPath, nlohmann::json jsonData) {
-    std::thread([URLPath, jsonData]() -> WebUtils::StringResponse {
-        const std::string getIp = getConfig().PCIPSetting.GetValue();
-        const std::string getPort = getConfig().PortSetting.GetValue();
-
-        const std::string URL = "http://" + getIp + ":" + getPort + URLPath;
-
-        std::string jsonStr = jsonData.dump();
-
-        WebUtils::URLOptions path{ URL };
-        path.noEscape = true;
-        
-        std::span<const uint8_t> body(
-            reinterpret_cast<const uint8_t*>(jsonStr.data()),
-            jsonStr.size()
-        );
-
-        auto response = WebUtils::PostAsync<WebUtils::StringResponse>(path, body);
-
-        response.wait();
-
-        auto responseValue = response.get();
-
-        logger.info(
-            "Attempted to send post request to {} with result of status code {}, and curl status being {}",
-            path.fullURl(), 
-            std::to_string(responseValue.get_HttpCode()), 
-            std::to_string(responseValue.get_CurlStatus())
-        );
-
-        bool success = responseValue.IsSuccessful();
-        if (!success) {
-            logger.debug("Failed to get response");
-        }
-
-        return responseValue;
-    }).detach();
-}
-
 
 MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSessionManager::HandlePlayerConnected, void, GlobalNamespace::MultiplayerSessionManager* self, GlobalNamespace::IConnectedPlayer* player) {
     MultiplayerSessionManager_HandlePlayerConnected(self, player);
@@ -159,7 +121,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSes
             nlohmann::json data;
             data["type"] = "LobbyLocalPlayerOnConnect";
 
-            CreateRequest("/sendData", data);
+            CreateRequest("POST", "/sendData", data);
 
             return;
         }
@@ -169,7 +131,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSes
         data["maxPlayerCount"] = maxPlayerCount;
         data["lobbyCode"] = lobbyCode;
 
-        CreateRequest("/sendData", data);
+        CreateRequest("POST", "/sendData", data);
     }
 }
 
@@ -187,7 +149,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
             nlohmann::json data;
             data["type"] = "LobbyLocalPlayerOnDisconnect";
 
-            CreateRequest("/sendData", data);
+            CreateRequest("POST", "/sendData", data);
 
             return;
         }
@@ -197,7 +159,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
         data["maxPlayerCount"] = maxPlayerCount;
         data["lobbyCode"] = lobbyCode;
 
-        CreateRequest("/sendData", data);
+        CreateRequest("POST", "/sendData", data);
     }
 }
 
@@ -207,7 +169,7 @@ MAKE_HOOK_MATCH(LevelCollectionViewController_DidActivate, &GlobalNamespace::Lev
     nlohmann::json data;
     data["type"] = "LevelSelectionMenuInitialized";
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MainFlowCoordinator_DidActivate, &GlobalNamespace::MainFlowCoordinator::DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -216,7 +178,7 @@ MAKE_HOOK_MATCH(MainFlowCoordinator_DidActivate, &GlobalNamespace::MainFlowCoord
     nlohmann::json data;
     data["type"] = "MainMenuInitialized";
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MenuTransitionsHelper_StartStandardLevel,
@@ -305,7 +267,7 @@ MAKE_HOOK_MATCH(MenuTransitionsHelper_StartStandardLevel,
     data["mappers"] = level->allMappers;
     data["difficulty"] = difficultyToString(difficulty);
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(SongStartSyncController_StartSong, &SongStartSyncController::StartSong, void, SongStartSyncController *self, PlayersSpecificSettingsAtGameStartModel* playersSpecificSettingsAtGameStartModel, ::StringW sessionGameId) {
@@ -327,7 +289,7 @@ MAKE_HOOK_MATCH(SongStartSyncController_StartSong, &SongStartSyncController::Sta
         data["type"] = "MultiplayerBeatmapInitialized";
     }
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MenuTransitionsHelper_StartMultiplayerLevel, static_cast<
@@ -392,7 +354,7 @@ MAKE_HOOK_MATCH(PauseController_Pause, &PauseController::Pause, void, PauseContr
     nlohmann::json data;
     data["type"] = "BeatmapPaused";
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &PauseController::HandlePauseMenuManagerDidPressContinueButton, void, PauseController *self) {
@@ -401,7 +363,7 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &P
     nlohmann::json data;
     data["type"] = "BeatmapResumed";
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(PauseMenuManager_MenuButtonPressed, &PauseMenuManager::MenuButtonPressed, void, PauseMenuManager *self) {
@@ -415,7 +377,7 @@ MAKE_HOOK_MATCH(StandardLevelGameplayManager_HandleGameEnergyDidReach0, &Standar
     nlohmann::json data;
     data["type"] = "BeatmapFailed";
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MultiplayerLocalActivePlayerGameplayAnimator_TransitionIntoFailedState, &MultiplayerLocalActivePlayerGameplayAnimator::TransitionIntoFailedState, void, MultiplayerLocalActivePlayerGameplayAnimator *self) {
@@ -429,7 +391,7 @@ MAKE_HOOK_MATCH(MultiplayerLocalActivePlayerGameplayAnimator_TransitionIntoFaile
     data["mappers"] = getBeatmapLevel->allMappers;
     data["difficulty"] = difficultyToString(getDifficulty);
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(MultiplayerResultsViewController_DidActivate, &MultiplayerResultsViewController::DidActivate, void, MultiplayerResultsViewController *self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -440,7 +402,7 @@ MAKE_HOOK_MATCH(MultiplayerResultsViewController_DidActivate, &MultiplayerResult
     nlohmann::json data;
     data["type"] = "MultiplayerBeatmapFinished";
 
-    CreateRequest("/sendData", data);
+    CreateRequest("POST", "/sendData", data);
 }
 
 MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidActivate, void, ResultsViewController *self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -459,7 +421,7 @@ MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidAc
         data["mappers"] = level->allMappers;
         data["difficulty"] = difficultyToString(difficulty);
 
-        CreateRequest("/sendData", data);
+        CreateRequest("POST", "/sendData", data);
     }
 }
 

@@ -7,6 +7,10 @@
 #include "GlobalNamespace/MultiplayerLobbyConnectionController.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 
+#include "web-utils/shared/WebUtils.hpp"
+
+#include "../src/utils/Requests/requests.hpp"
+
 using namespace GlobalNamespace;
 
 void DidActivate(HMUI::ViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -47,6 +51,39 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
         });
 
         modal->Show();
+
+        return;
+    }
+
+    WebUtils::StringResponse getVersion = CreateRequest("GET", "/version", {});
+
+    if (getVersion.IsSuccessful()) {
+        auto data = getVersion.GetParsedData();
+    } else {
+        logger.debug("Failed to retrieve version.");
+
+        auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
+
+        auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
+
+        auto text = BSML::Lite::CreateText(verticalLayout, "Your local server could not be updated due to changes made. Please\nopen the instructions to download the new version of the local server");
+    
+        text->set_enableWordWrapping(true);
+        text->set_alignment(TMPro::TextAlignmentOptions::Center);
+
+        auto horizontalLayout = BSML::Lite::CreateHorizontalLayoutGroup(verticalLayout);
+
+        BSML::Lite::CreateUIButton(horizontalLayout, "Open Instructions", []() {
+            UnityEngine::Application::OpenURL("https://github.com/RainzDev/BSQ_DiscordRichPresence#2-install-local-server");
+        });
+        BSML::Lite::CreateUIButton(horizontalLayout, "Close", [modal]() {
+            modal->Hide();
+        });
+
+        modal->Show();
+
+        return;
+
     }
 }
 
