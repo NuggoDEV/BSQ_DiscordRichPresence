@@ -57,7 +57,7 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
 
     WebUtils::JsonResponse response = CreateRequest("GET", "/version", {});
 
-    if (response.IsSuccessful()) {
+    if (response.IsSuccessful() && firstActivation) {
         std::string version = response.GetParsedData()["version"].GetString();
 
         if (version != "0.1.4") {
