@@ -55,10 +55,10 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
         return;
     }
 
-    WebUtils::JsonResponse response = CreateRequest("GET", "/version", {});
+    auto response = CreateRequest("GET", "/version", {});
 
-    if (response.IsSuccessful() && firstActivation) {
-        std::string version = response.GetParsedData()["version"].GetString();
+    if (response.get().IsSuccessful() && firstActivation) {
+        std::string version = response.get().GetParsedData()["version"].GetString();
 
         if (version != "0.1.4") {
             auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
@@ -87,11 +87,11 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
     } else {
         logger.debug("Failed to retrieve version.");
 
-        auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
+        auto modal = BSML::Lite::CreateModal(self->transform, {105, 40}, []() {});
 
         auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
 
-        auto text = BSML::Lite::CreateText(verticalLayout, "Your local server could not be updated due to not being able to connect. Please\nopen the instructions to download the new version of the local server");
+        auto text = BSML::Lite::CreateText(verticalLayout, "Your local server could not be updated due to not being able to connect.\nPlease open the instructions to download the new version of the local server");
     
         text->set_enableWordWrapping(true);
         text->set_alignment(TMPro::TextAlignmentOptions::Center);

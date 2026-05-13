@@ -7,49 +7,64 @@
 
 #include <stdexcept>
 
-WebUtils::JsonResponse CreateRequest(std::string method, std::string URLPath, nlohmann::json jsonData) {
-    std::thread([method, URLPath, jsonData]() -> WebUtils::JsonResponse {
-        const std::string getIp = getConfig().PCIPSetting.GetValue();
-        const std::string getPort = getConfig().PortSetting.GetValue();
+std::future<WebUtils::JsonResponse> CreateRequest(
+    std::string method,
+    std::string URLPath,
+    nlohmann::json jsonData
+) {
+    std::promise<WebUtils::JsonResponse> promise;
 
-        const std::string URL = "http://" + getIp + ":" + getPort + URLPath;
+    auto future = promise.get_future();
 
-        std::string jsonStr = jsonData.dump();
+    std::thread(
+        [method, URLPath, jsonData,
+         promise = std::move(promise)]() mutable {
 
-        WebUtils::URLOptions path{ URL };
-        path.noEscape = true;
-        
-        std::span<const uint8_t> body(
-            reinterpret_cast<const uint8_t*>(jsonStr.data()),
-            jsonStr.size()
-        );
+            try {
 
-        std::future<WebUtils::JsonResponse> response;
+                const std::string getIp =
+                    getConfig().PCIPSetting.GetValue();
 
-        if (method == "GET") {
-            response = WebUtils::GetAsync<WebUtils::JsonResponse>(path);
-        } else if (method == "POST") {
-            response = WebUtils::PostAsync<WebUtils::JsonResponse>(path, body);
-        } else {
-            throw std::runtime_error("Invalid method for request");
-        }
+                const std::string getPort =
+                    getConfig().PortSetting.GetValue();
 
-        response.wait();
+                const std::string URL =
+                    "http://" + getIp + ":" + getPort + URLPath;
 
-        auto responseValue = response.get();
+                std::string jsonStr = jsonData.dump();
 
-        logger.info(
-            "Attempted to send post request to {} with result of status code {}, and curl status being {}",
-            path.fullURl(), 
-            std::to_string(responseValue.get_HttpCode()), 
-            std::to_string(responseValue.get_CurlStatus())
-        );
+                WebUtils::URLOptions path{ URL };
+                path.noEscape = true;
 
-        bool success = responseValue.IsSuccessful();
-        if (!success) {
-            logger.debug("Failed to get response");
-        }
+                std::span<const uint8_t> body(
+                    reinterpret_cast<const uint8_t*>(jsonStr.data()),
+                    jsonStr.size()
+                );
 
-        return responseValue;
-    }).detach();
+                std::future<WebUtils::JsonResponse> response;
+
+                if (method == "GET") {
+                    response =
+                        WebUtils::GetAsync<WebUtils::JsonResponse>(path);
+                }
+                else if (method == "POST") {
+                    response =
+                        WebUtils::PostAsync<WebUtils::JsonResponse>(
+                            path,
+                            body
+                        );
+                }
+                else {
+                    throw std::runtime_error("Invalid method");
+                }
+
+                promise.set_value(response.get());
+            }
+            catch (...) {
+                promise.set_exception(std::current_exception());
+            }
+
+        }).detach();
+
+    return future;
 }
