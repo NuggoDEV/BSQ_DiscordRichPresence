@@ -57,8 +57,10 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
 
     auto response = CreateRequest("GET", "/version", {});
 
-    if (response.get().IsSuccessful() && firstActivation) {
-        std::string version = response.get().GetParsedData()["version"].GetString();
+    auto result = response.get();
+
+    if (result.IsSuccessful() && firstActivation) {
+        std::string version = result.GetParsedData()["version"].GetString();
 
         if (version != "0.1.4") {
             auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
