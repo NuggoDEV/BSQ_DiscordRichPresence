@@ -23,9 +23,9 @@ Download and install the mod using your preferred Quest mod manager:
 
 ### 2. Install Local Server
 
-- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.4/BeatSaberBridgeAPI.CPP-linux.zip)
-- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.4/BeatSaberBridgeAPI.CPP-windows.zip)
-- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.4/BeatSaberBridgeAPI.CPP-macos.zip)
+- For Linux: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.4/BeatSaberBridgeAPI-linux.zip)
+- For Windows: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.4/BeatSaberBridgeAPI-windows.zip)
+- For MacOS: [Download Here](https://github.com/RainzDev/BeatSaberBridgeAPI.CPP/releases/download/v0.1.4/BeatSaberBridgeAPI-macos.zip)
 
 ### 3. Start the Server
 
@@ -44,7 +44,7 @@ Extract the zip file and then open it. You can then simply just double click the
 Extract the zip folder, and then run these commands.
 
 ```bash
-cd BeatSaberBridgeAPI.CPP-macos
+cd BeatSaberBridgeAPI-macos
 chmod +x BeatSaberBridgeAPI
 ./BeatSaberBridgeAPI
 ```
@@ -56,7 +56,7 @@ chmod +x BeatSaberBridgeAPI
 Extract the zip folder, and then run these commands.
 
 ```bash
-cd BeatSaberBridgeAPI.CPP-linux
+cd BeatSaberBridgeAPI-linux
 chmod +x BeatSaberBridgeAPI
 ./BeatSaberBridgeAPI
 ```

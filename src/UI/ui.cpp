@@ -55,63 +55,73 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
         return;
     }
 
-    auto response = CreateRequest("GET", "/version", {});
+    std::shared_future<WebUtils::JsonResponse> future = CreateRequest("GET", "/version", {});
 
-    auto result = response.get();
+    BSML::MainThreadScheduler::AwaitFuture<WebUtils::JsonResponse>(
+        future,
+        [future, self, firstActivation]() -> void
+        {
+            auto& result = future.get();
 
-    if (result.IsSuccessful() && firstActivation) {
-        std::string version = result.GetParsedData()["version"].GetString();
+            if (result.IsSuccessful() && firstActivation) {
+                std::string version = result.GetParsedData()["version"].GetString();
 
-        if (version != "0.1.4") {
-            auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
+                if (version != "0.1.4") {
+                    auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
 
-            auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
+                    auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
 
-            auto text = BSML::Lite::CreateText(verticalLayout, "It seems like you're using an outdated version of the local server. Please update it to latest whenever you can.");
+                    auto text = BSML::Lite::CreateText(verticalLayout, "It seems like you're using an outdated version of the local server. Please update it to latest whenever you can.");
     
-            text->set_enableWordWrapping(true);
-            text->set_alignment(TMPro::TextAlignmentOptions::Center);
+                    text->set_enableWordWrapping(true);
+                    text->set_alignment(TMPro::TextAlignmentOptions::Center);
 
-            auto horizontalLayout = BSML::Lite::CreateHorizontalLayoutGroup(verticalLayout);
+                    auto horizontalLayout = BSML::Lite::CreateHorizontalLayoutGroup(verticalLayout);
 
-            BSML::Lite::CreateUIButton(horizontalLayout, "Update", [modal]() {
-                CreateRequest("POST", "/update", {});
-                modal->Hide();
-            });
-            BSML::Lite::CreateUIButton(horizontalLayout, "Close", [modal]() {
-                modal->Hide();
-            });
+                    BSML::Lite::CreateUIButton(horizontalLayout, "Update", [modal]() {
+                        CreateRequest("POST", "/update", {});
+                        if (UnityW(modal) != nullptr) {
+                            modal->Hide();
+                        }
+                    });
+                    BSML::Lite::CreateUIButton(horizontalLayout, "Close", [modal]() {
+                        if (UnityW(modal) != nullptr) {
+                            modal->Hide();
+                        }
+                    });
 
-            modal->Show();
+                    if (UnityW(modal) != nullptr) {
+                        modal->Show();
+                    }
 
-            return;
-        }
-    } else {
-        logger.debug("Failed to retrieve version.");
+                    return;
+                }
+            } else {
+                logger.debug("Failed to retrieve version.");
 
-        auto modal = BSML::Lite::CreateModal(self->transform, {105, 40}, []() {});
+                auto modal = BSML::Lite::CreateModal(self->transform, {105, 40}, []() {});
 
-        auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
+                auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
 
-        auto text = BSML::Lite::CreateText(verticalLayout, "Your local server could not be updated due to not being able to connect.\nPlease open the instructions to download the new version of the local server");
+                auto text = BSML::Lite::CreateText(verticalLayout, "Your local server could not be updated due to not being able to connect.\nPlease open the instructions to download the new version of the local server");
     
-        text->set_enableWordWrapping(true);
-        text->set_alignment(TMPro::TextAlignmentOptions::Center);
+                text->set_enableWordWrapping(true);
+                text->set_alignment(TMPro::TextAlignmentOptions::Center);
 
-        auto horizontalLayout = BSML::Lite::CreateHorizontalLayoutGroup(verticalLayout);
+                auto horizontalLayout = BSML::Lite::CreateHorizontalLayoutGroup(verticalLayout);
 
-        BSML::Lite::CreateUIButton(horizontalLayout, "Open Instructions", []() {
-            UnityEngine::Application::OpenURL("https://github.com/RainzDev/BSQ_DiscordRichPresence#2-install-local-server");
+                BSML::Lite::CreateUIButton(horizontalLayout, "Open Instructions", []() {
+                    UnityEngine::Application::OpenURL("https://github.com/RainzDev/BSQ_DiscordRichPresence#2-install-local-server");
+                });
+                BSML::Lite::CreateUIButton(horizontalLayout, "Close", [modal]() {
+                    modal->Hide();
+                });
+
+                modal->Show();
+
+                return;
+            }
         });
-        BSML::Lite::CreateUIButton(horizontalLayout, "Close", [modal]() {
-            modal->Hide();
-        });
-
-        modal->Show();
-
-        return;
-
-    }
 }
 
 void InstallUIHooks() {
