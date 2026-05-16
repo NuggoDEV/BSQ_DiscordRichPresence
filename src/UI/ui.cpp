@@ -71,7 +71,7 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
 
                     auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
 
-                    auto text = BSML::Lite::CreateText(verticalLayout, "It seems like you're using an outdated version of the local server. Please update it to latest whenever you can.");
+                    auto text = BSML::Lite::CreateText(verticalLayout, "It seems like you're using an outdated version of the local server.\nPlease update it to latest whenever you can.");
     
                     text->set_enableWordWrapping(true);
                     text->set_alignment(TMPro::TextAlignmentOptions::Center);
@@ -98,6 +98,10 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
                 }
             } else {
                 logger.debug("Failed to retrieve version.");
+
+                if (!firstActivation) {
+                    return;
+                }
 
                 auto modal = BSML::Lite::CreateModal(self->transform, {105, 40}, []() {});
 
