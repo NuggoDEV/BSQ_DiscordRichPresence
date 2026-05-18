@@ -66,7 +66,7 @@ MAKE_HOOK_MATCH(MainMenuViewController_DidActivate, &MainMenuViewController::Did
             if (result.IsSuccessful() && firstActivation) {
                 std::string version = result.GetParsedData()["version"].GetString();
 
-                if (version != "0.1.4") {
+                if (version != "0.1.5") {
                     auto modal = BSML::Lite::CreateModal(self->transform, {100, 40}, []() {});
 
                     auto verticalLayout = BSML::Lite::CreateVerticalLayoutGroup(modal);
