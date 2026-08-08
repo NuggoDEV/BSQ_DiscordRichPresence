@@ -1,9 +1,3 @@
-extern int g_missCount;
-extern int g_badCutCount;
-
-int GetMissCount();
-int GetBadCutCount();
+#pragma once
 
 void StatUpdate();
-
-void InstallBeatmapObjectHooks();

@@ -4,7 +4,7 @@
 void Heartbeat() {
     while (true) {
         nlohmann::json data;
-        data["type"] = "Heartbeat";
+        data["type"] = "HeartbeatReceiver";
 
         logger.debug("Heartbeat sent to server");
 
