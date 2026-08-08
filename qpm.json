@@ -90,6 +90,11 @@
       "id": "custom-types",
       "versionRange": "^0.18.4",
       "additionalData": {}
+    },
+    {
+      "id": "metacore",
+      "versionRange": "^1.6.3",
+      "additionalData": {}
     }
   ]
 }

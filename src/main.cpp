@@ -78,6 +78,11 @@
 
 #include "Zenject/DiContainer.hpp"
 
+#include "metacore/shared/unity.hpp"
+
+#include "utils/Schedulers/Heartbeats/heartbeat.hpp"
+#include "utils/Schedulers/Beatmap/beatmap.hpp"
+
 using namespace GlobalNamespace;
 
 bool skipNextActivation = false;
@@ -398,6 +403,8 @@ MAKE_HOOK_MATCH(MultiplayerResultsViewController_DidActivate, &MultiplayerResult
     MultiplayerResultsViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 
     inGameplay = false;
+    g_missCount = 0;
+    g_badCutCount = 0;
 
     nlohmann::json data;
     data["type"] = "MultiplayerBeatmapFinished";
@@ -465,5 +472,8 @@ extern "C" EXPORT void late_load() noexcept {
     INSTALL_HOOK(logger, MainFlowCoordinator_DidActivate);
     INSTALL_HOOK(logger, StandardLevelGameplayManager_HandleGameEnergyDidReach0);
     INSTALL_HOOK(logger, ResultsViewController_DidActivate);
+    InstallBeatmapObjectHooks();
+    MetaCore::Engine::ScheduleMainThread(Heartbeat);
+    MetaCore::Engine::ScheduleMainThread(StatUpdate);
     logger.info("Completed load!");
 }

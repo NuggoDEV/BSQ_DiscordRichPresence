@@ -7,7 +7,4 @@ Index:
   Background: Skip
 
 CompileFlags:
-  Add: [
-    "-I/home/jess/.local/share/vcpkg/installed/x64-linux/include",
-    "-L/home/jess/.local/share/vcpkg/installed/x64-linux/lib"
-  ]
+  Add: []

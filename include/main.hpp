@@ -6,3 +6,4 @@
 
 // Define a logger that will associate all messages with our mod
 constexpr auto logger = Paper::ConstLoggerContext(MOD_ID);
+extern bool inGameplay;
