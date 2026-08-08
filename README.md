@@ -6,6 +6,7 @@ A Beat Saber Quest mod for displaying status on Discord
 
 ## 📋 Requirements
 
+- ✅ Modded Beat Saber Quest (MBF)
 - ✅ Local server handling Discord Rich Presence updates
 - ✅ Same network connection (Quest ↔ PC)
 
@@ -18,7 +19,6 @@ A Beat Saber Quest mod for displaying status on Discord
 Download and install the mod using your preferred Quest mod manager:
 
 - Install via [MBF](https://mbf.bsquest.xyz/)
-- Install via [QuestPatcher GUI](https://github.com/Lauriethefish/QuestPatcher)
 
 ### 2. Install Local Server
 
