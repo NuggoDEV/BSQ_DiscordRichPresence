@@ -86,7 +86,8 @@
 using namespace GlobalNamespace;
 
 bool skipNextActivation = false;
-bool inGameplay = false;
+bool inMultiplayerGameplay = false;
+bool inSingleplayerGameplay = false;
 ::GlobalNamespace::BeatmapLevel* getBeatmapLevel;
 BeatmapDifficulty getDifficulty;
 
@@ -121,7 +122,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerConnected, &MultiplayerSes
     auto lobbyCode = BSML::Helpers::GetMainFlowCoordinator()->_multiplayerModeSelectionFlowCoordinator->_gameServerLobbyFlowCoordinator->____unifiedNetworkPlayerModel->get_code();
 
 
-    if (!inGameplay) {
+    if (!inMultiplayerGameplay) {
         if (player == getLocalPlayer) {
             nlohmann::json data;
             data["type"] = "LobbyLocalPlayerOnConnect";
@@ -149,7 +150,7 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
 
     auto lobbyCode = BSML::Helpers::GetMainFlowCoordinator()->_multiplayerModeSelectionFlowCoordinator->_gameServerLobbyFlowCoordinator->____unifiedNetworkPlayerModel->get_code();
 
-    if (!inGameplay) {
+    if (!inMultiplayerGameplay) {
         if (player == getLocalPlayer) {
             nlohmann::json data;
             data["type"] = "LobbyLocalPlayerOnDisconnect";
@@ -264,6 +265,8 @@ MAKE_HOOK_MATCH(MenuTransitionsHelper_StartStandardLevel,
     getDifficulty = difficulty;
     skipNextActivation = true;
 
+    inSingleplayerGameplay = true;
+
     nlohmann::json data;
     data["type"] = "BeatmapInitialized";
     data["title"] = level->songName;
@@ -279,7 +282,7 @@ MAKE_HOOK_MATCH(SongStartSyncController_StartSong, &SongStartSyncController::Sta
     SongStartSyncController_StartSong(self, playersSpecificSettingsAtGameStartModel, sessionGameId);
     auto sessionManager = self->_multiplayerSessionManager;
 
-    inGameplay = true;
+    inMultiplayerGameplay = true;
 
     nlohmann::json data;
     data["title"] = getBeatmapLevel->songName;
@@ -359,6 +362,8 @@ MAKE_HOOK_MATCH(PauseController_Pause, &PauseController::Pause, void, PauseContr
     nlohmann::json data;
     data["type"] = "BeatmapPaused";
 
+    inSingleplayerGameplay = false;
+
     CreateRequest("POST", "/sendData", data);
 }
 
@@ -367,6 +372,8 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &P
 
     nlohmann::json data;
     data["type"] = "BeatmapResumed";
+
+    inSingleplayerGameplay = true;
 
     CreateRequest("POST", "/sendData", data);
 }
@@ -402,7 +409,7 @@ MAKE_HOOK_MATCH(MultiplayerLocalActivePlayerGameplayAnimator_TransitionIntoFaile
 MAKE_HOOK_MATCH(MultiplayerResultsViewController_DidActivate, &MultiplayerResultsViewController::DidActivate, void, MultiplayerResultsViewController *self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
     MultiplayerResultsViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 
-    inGameplay = false;
+    inMultiplayerGameplay = false;
 
     nlohmann::json data;
     data["type"] = "MultiplayerBeatmapFinished";
@@ -418,6 +425,8 @@ MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidAc
     auto difficulty = self->____beatmapKey.difficulty;
 
     if (results && results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Cleared) {
+
+        inSingleplayerGameplay = false;
         nlohmann::json data;
         data["type"] = "BeatmapCleared";
         data["title"] = level->songName;
