@@ -30,14 +30,6 @@ void StatUpdateLoop() {
             data["notesBadCut"] = getNotesBadCut;
             data["bombsHit"] = getBombsHit;
             CreateRequest("POST", "/sendData", data);
-
-            logger.info("ScoreUpdate sent to server");
-            logger.info("Score: {}", getScore);
-            logger.info("Notes Missed: {}", getNotesMissed);
-            logger.info("Notes Bad Cut: {}", getNotesBadCut);
-            logger.info("Bombs Hit: {}", getBombsHit);
-
-            std::this_thread::sleep_for(std::chrono::seconds(10));
         }
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }

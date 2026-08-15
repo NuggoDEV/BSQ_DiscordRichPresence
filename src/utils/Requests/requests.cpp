@@ -6,90 +6,118 @@
 #include "web-utils/shared/WebUtils.hpp"
 
 #include <stdexcept>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
+#include <atomic>
 
 std::future<WebUtils::JsonResponse> CreateRequest(
     std::string method,
     std::string URLPath,
     nlohmann::json jsonData
 ) {
-    std::promise<WebUtils::JsonResponse> promise;
+    // Single-sender queue: enqueue the request and return a future
+    struct Task {
+        std::string method;
+        std::string urlPath;
+        nlohmann::json data;
+        std::promise<WebUtils::JsonResponse> promise;
+    };
 
-    auto future = promise.get_future();
+    static std::mutex queueMutex;
+    static std::condition_variable queueCv;
+    static std::deque<std::unique_ptr<Task>> queue;
+    static std::atomic<bool> workerStarted{false};
 
-    std::thread(
-        [method, URLPath, jsonData,
-         promise = std::move(promise)]() mutable {
-
-            try {
-
-                const std::string getIp =
-                    getConfig().PCIPSetting.GetValue();
-
-                const std::string getPort =
-                    getConfig().PortSetting.GetValue();
-
-                const std::string URL =
-                    "http://" + getIp + ":" + getPort + URLPath;
-
-                std::string jsonStr = jsonData.dump();
-
-                WebUtils::URLOptions path{ URL };
-                path.noEscape = true;
-
-                std::span<const uint8_t> body(
-                    reinterpret_cast<const uint8_t*>(jsonStr.data()),
-                    jsonStr.size()
-                );
-
-                std::future<WebUtils::JsonResponse> response;
-
-                if (method == "GET") {
-                    response =
-                        WebUtils::GetAsync<WebUtils::JsonResponse>(path);
-                }
-                else if (method == "POST") {
-                    response =
-                        WebUtils::PostAsync<WebUtils::JsonResponse>(
-                            path,
-                            body
-                        );
-                }
-                else {
-                    throw std::runtime_error("Invalid method");
+    // Worker that processes tasks sequentially
+    auto ensureWorker = []() {
+        static std::mutex startMutex;
+        if (workerStarted.load(std::memory_order_acquire)) return;
+        std::lock_guard<std::mutex> lk(startMutex);
+        if (workerStarted.load(std::memory_order_acquire)) return;
+        std::thread([]() {
+            while (true) {
+                std::unique_ptr<Task> task;
+                {
+                    std::unique_lock<std::mutex> lk(queueMutex);
+                    queueCv.wait(lk, [] { return !queue.empty(); });
+                    task = std::move(queue.front());
+                    queue.pop_front();
                 }
 
-                promise.set_value(response.get());
+                try {
+                    // Build URL: if urlPath already starts with http, use it directly
+                    std::string URL;
+                    if (task->urlPath.rfind("http", 0) == 0) {
+                        URL = task->urlPath;
+                    } else {
+                        const std::string getIp = getConfig().PCIPSetting.GetValue();
+                        const std::string getPort = getConfig().PortSetting.GetValue();
+                        URL = "http://" + getIp + ":" + getPort + task->urlPath;
+                    }
+
+                    std::string jsonStr = task->data.dump();
+
+                    // Log the JSON body from the worker thread
+                    logger.info("Request JSON: {}", jsonStr);
+
+                    WebUtils::URLOptions path{URL};
+                    path.noEscape = true;
+
+                    std::span<const uint8_t> body(
+                        reinterpret_cast<const uint8_t*>(jsonStr.data()),
+                        jsonStr.size()
+                    );
+
+                    std::future<WebUtils::JsonResponse> response;
+                    if (task->method == "GET") {
+                        response = WebUtils::GetAsync<WebUtils::JsonResponse>(path);
+                    } else if (task->method == "POST") {
+                        response = WebUtils::PostAsync<WebUtils::JsonResponse>(path, body);
+                    } else {
+                        throw std::runtime_error("Invalid method");
+                    }
+
+                    // Fulfill the task promise asynchronously so the worker isn't blocked
+                    std::promise<WebUtils::JsonResponse> prom = std::move(task->promise);
+                    std::thread([
+                        prom = std::move(prom),
+                        resp = std::move(response)
+                    ]() mutable {
+                        try {
+                            prom.set_value(resp.get());
+                        } catch (...) {
+                            prom.set_exception(std::current_exception());
+                        }
+                    }).detach();
+                } catch (...) {
+                    task->promise.set_exception(std::current_exception());
+                }
             }
-            catch (...) {
-                promise.set_exception(std::current_exception());
-            }
-
         }).detach();
+        workerStarted.store(true, std::memory_order_release);
+    };
 
-    return future;
+    ensureWorker();
+
+    auto t = std::make_unique<Task>();
+    t->method = std::move(method);
+    t->urlPath = std::move(URLPath);
+    t->data = std::move(jsonData);
+    auto fut = t->promise.get_future();
+
+    {
+        std::lock_guard<std::mutex> lk(queueMutex);
+        queue.push_back(std::move(t));
+    }
+    queueCv.notify_one();
+
+    return fut;
 }
 
 std::future<WebUtils::JsonResponse> GetLatestGithub() {
-    std::promise<WebUtils::JsonResponse> promise;
-
-    auto future = promise.get_future();
-
-    std::thread(
-        [promise = std::move(promise)]() mutable {
-
-            try {
-                WebUtils::URLOptions path{ "https://api.github.com/repos/RainzDev/BeatSaberBridgeAPI.CPP/releases/latest" };
-                path.noEscape = true;
-
-                std::future<WebUtils::JsonResponse> response = WebUtils::GetAsync<WebUtils::JsonResponse>(path);
-
-                promise.set_value(response.get());
-            }
-            catch (...) {
-                promise.set_exception(std::current_exception());
-            }
-
-        }).detach();
-
-    return future;
+    // Enqueue the github latest release request to preserve ordering
+    nlohmann::json empty;
+    return CreateRequest("GET", "https://api.github.com/repos/RainzDev/BeatSaberBridgeAPI.CPP/releases/latest", empty);
 }

@@ -71,7 +71,7 @@
 #include "GlobalNamespace/MultiplayerResultsViewController.hpp"
 #include "GlobalNamespace/GameServerLobbyFlowCoordinator.hpp"
 #include "GlobalNamespace/LevelCollectionViewController.hpp"
-#include "GlobalNamespace/LevelSelectionNavigationController.hpp"
+#include "GlobalNamespace/LevelSelectionFlowCoordinator.hpp"
 #include "GlobalNamespace/ResultsViewController.hpp"
 #include "GlobalNamespace/MainMenuViewController.hpp"
 #include "GlobalNamespace/ConnectedPlayerManager.hpp"
@@ -172,10 +172,12 @@ MAKE_HOOK_MATCH(MultiplayerSessionManager_HandlePlayerDisconnected, &Multiplayer
 MAKE_HOOK_MATCH(LevelCollectionViewController_DidActivate, &GlobalNamespace::LevelCollectionViewController::DidActivate, void, GlobalNamespace::LevelCollectionViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
     LevelCollectionViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 
-    nlohmann::json data;
-    data["type"] = "LevelSelectionMenuInitialized";
+    if (self->get_isActiveAndEnabled()) {
+        nlohmann::json data;
+        data["type"] = "LevelSelectionMenuInitialized";
 
-    CreateRequest("POST", "/sendData", data);
+        CreateRequest("POST", "/sendData", data);
+    }
 }
 
 MAKE_HOOK_MATCH(MainFlowCoordinator_DidActivate, &GlobalNamespace::MainFlowCoordinator::DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {

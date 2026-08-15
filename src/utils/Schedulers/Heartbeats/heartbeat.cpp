@@ -7,8 +7,6 @@ void HeartbeatLoop() {
         nlohmann::json data;
         data["type"] = "HeartbeatReceiver";
 
-        logger.debug("Heartbeat sent to server");
-
         CreateRequest("POST", "/sendData", data);
 
         std::this_thread::sleep_for(std::chrono::seconds(10));
