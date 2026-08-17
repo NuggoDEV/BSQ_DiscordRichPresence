@@ -32,7 +32,7 @@ Download and install the mod using your preferred Quest mod manager:
 > This can be opened without needing your Discord client opened, as this is using Discord's Social SDK instead of Game SDK.
 
 <details>
-<summary><b>🪟 Windows (CMD)</b></summary>
+<summary><b>🪟 Windows</b></summary>
 
 Extract the zip file and then open it. You can then simply just double click the exe file to open it. (Please note that Windows Defender might flag it. This is due to the file not having a certificate.)
 </details>
@@ -50,7 +50,7 @@ chmod +x BeatSaberBridgeAPI
 </details>
 
 <details>
-<summary><b>🐧 Linux</b></summary>
+<summary><b>🐧 Linux (Terminal)</b></summary>
 
 Extract the zip folder, and then run these commands.
 
@@ -66,6 +66,9 @@ chmod +x BeatSaberBridgeAPI
 Once the server is running, you should see a pop-up on your Discord client asking you to authorize. Make sure to click "Authorize".
 
 If your Discord client is closed or not installed, it'll instead open up a page in your default browser.
+
+> [!NOTE]
+> This will only be shown once. Running the executable again will not show the authorization and will automatically connect you. If you want to use a different account, manually deauthorize by going to your Discord User Settings, press "Connected Apps" and click "Authorized Apps" in the dropdown, and then press "Deauthorize" for Beat Saber.
 
 ### 5. Configure the Mod
 
