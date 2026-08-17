@@ -385,15 +385,6 @@ MAKE_HOOK_MATCH(PauseMenuManager_MenuButtonPressed, &PauseMenuManager::MenuButto
     skipNextActivation = false;
 }
 
-MAKE_HOOK_MATCH(StandardLevelGameplayManager_HandleGameEnergyDidReach0, &StandardLevelGameplayManager::HandleGameEnergyDidReach0, void, StandardLevelGameplayManager *self) {
-    StandardLevelGameplayManager_HandleGameEnergyDidReach0(self);
-
-    nlohmann::json data;
-    data["type"] = "BeatmapFailed";
-
-    CreateRequest("POST", "/sendData", data);
-}
-
 MAKE_HOOK_MATCH(MultiplayerLocalActivePlayerGameplayAnimator_TransitionIntoFailedState, &MultiplayerLocalActivePlayerGameplayAnimator::TransitionIntoFailedState, void, MultiplayerLocalActivePlayerGameplayAnimator *self) {
     MultiplayerLocalActivePlayerGameplayAnimator_TransitionIntoFailedState(self);
 
@@ -426,8 +417,16 @@ MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidAc
     auto level = self->____beatmapLevel;
     auto difficulty = self->____beatmapKey.difficulty;
 
-    if (results && results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Cleared) {
+    if (results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Failed) {
+        inSingleplayerGameplay = false;
 
+        nlohmann::json data;
+        data["type"] = "BeatmapFailed";
+
+        CreateRequest("POST", "/sendData", data);
+    }
+
+    if (results && results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Cleared) {
         inSingleplayerGameplay = false;
         nlohmann::json data;
         data["type"] = "BeatmapCleared";
@@ -479,7 +478,6 @@ extern "C" EXPORT void late_load() noexcept {
     INSTALL_HOOK(logger, PauseController_Pause);
     INSTALL_HOOK(logger, PauseController_HandlePauseMenuManagerDidPressContinueButton);
     INSTALL_HOOK(logger, MainFlowCoordinator_DidActivate);
-    INSTALL_HOOK(logger, StandardLevelGameplayManager_HandleGameEnergyDidReach0);
     INSTALL_HOOK(logger, ResultsViewController_DidActivate);
     MetaCore::Engine::ScheduleMainThread(Heartbeat);
     MetaCore::Engine::ScheduleMainThread(StatUpdate);
