@@ -22,6 +22,7 @@ void StatUpdateLoop() {
             auto getNotesMissed = MetaCore::Stats::GetNotesMissed(2);
             auto getNotesBadCut = MetaCore::Stats::GetNotesBadCut(2);
             auto getBombsHit = MetaCore::Stats::GetBombsHit(2);
+            auto getCurrentTime = MetaCore::Stats::GetSongTime();
 
             nlohmann::json data;
             data["type"] = "BeatmapStatUpdate";
@@ -29,6 +30,7 @@ void StatUpdateLoop() {
             data["notesMissed"] = getNotesMissed;
             data["notesBadCut"] = getNotesBadCut;
             data["bombsHit"] = getBombsHit;
+            data["currentTime"] = getCurrentTime;
             CreateRequest("POST", "/sendData", data);
         }
         std::this_thread::sleep_for(std::chrono::seconds(10));
