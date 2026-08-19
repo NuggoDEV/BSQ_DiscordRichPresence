@@ -380,6 +380,17 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressContinueButton, &P
     CreateRequest("POST", "/sendData", data);
 }
 
+MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressRestartButton, &PauseController::HandlePauseMenuManagerDidPressRestartButton, void, PauseController *self) {
+    PauseController_HandlePauseMenuManagerDidPressRestartButton(self);
+
+    nlohmann::json data;
+    data["type"] = "BeatmapRestarted";
+
+    inSingleplayerGameplay = true;
+
+    CreateRequest("POST", "/sendData", data);
+}
+
 MAKE_HOOK_MATCH(PauseMenuManager_MenuButtonPressed, &PauseMenuManager::MenuButtonPressed, void, PauseMenuManager *self) {
     PauseMenuManager_MenuButtonPressed(self);
     skipNextActivation = false;
