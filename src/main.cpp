@@ -440,6 +440,15 @@ MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidAc
     }
 }
 
+MAKE_HOOK_MATCH(ResultsViewController_ContinueButtonPressed, &ResultsViewController::ContinueButtonPressed, void, ResultsViewController* self) {
+    ResultsViewController_ContinueButtonPressed(self);
+
+    nlohmann::json data;
+    data["type"] = "LevelSelectionMenuInitialized";
+
+    CreateRequest("POST", "/sendData", data);
+}
+
 // Store the mod ID and version, so it can be sent to the modloader at startup
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 
@@ -479,6 +488,7 @@ extern "C" EXPORT void late_load() noexcept {
     INSTALL_HOOK(logger, PauseController_HandlePauseMenuManagerDidPressContinueButton);
     INSTALL_HOOK(logger, MainFlowCoordinator_DidActivate);
     INSTALL_HOOK(logger, ResultsViewController_DidActivate);
+    INSTALL_HOOK(logger, ResultsViewController_ContinueButtonPressed);
     MetaCore::Engine::ScheduleMainThread(Heartbeat);
     MetaCore::Engine::ScheduleMainThread(StatUpdate);
     logger.info("Completed load!");

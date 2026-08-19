@@ -129,6 +129,12 @@ inet 192.168.x.x/24
 ```
 </details>
 
+## Todo
+
+- [x] Fix level selection not detecting when pressing "continue" from result view
+- [ ] Fix heartbeats not being sent when in a beatmap
+- [ ] Fix result view being automatically switched to level selection
+
 ## Building
 
 For a full introduction to Quest modding, visit the [BSMG Wiki](https://bsmg.wiki/modding/quest/intro.html).
