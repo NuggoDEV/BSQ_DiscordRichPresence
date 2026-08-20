@@ -11,6 +11,8 @@
 #include <condition_variable>
 #include <deque>
 #include <atomic>
+#include <vector>
+#include <memory>
 
 std::future<WebUtils::JsonResponse> CreateRequest(
     std::string method,
@@ -65,25 +67,29 @@ std::future<WebUtils::JsonResponse> CreateRequest(
                     WebUtils::URLOptions path{URL};
                     path.noEscape = true;
 
-                    std::span<const uint8_t> body(
-                        reinterpret_cast<const uint8_t*>(jsonStr.data()),
-                        jsonStr.size()
-                    );
+                    // Copy JSON body into a heap buffer so the span remains valid
+                    // for the duration of the async request handling.
+                    std::shared_ptr<std::vector<uint8_t>> bodyBuf;
 
                     std::future<WebUtils::JsonResponse> response;
                     if (task->method == "GET") {
                         response = WebUtils::GetAsync<WebUtils::JsonResponse>(path);
                     } else if (task->method == "POST") {
+                        bodyBuf = std::make_shared<std::vector<uint8_t>>(jsonStr.begin(), jsonStr.end());
+                        std::span<const uint8_t> body(bodyBuf->data(), bodyBuf->size());
                         response = WebUtils::PostAsync<WebUtils::JsonResponse>(path, body);
                     } else {
                         throw std::runtime_error("Invalid method");
                     }
 
-                    // Fulfill the task promise asynchronously so the worker isn't blocked
+                    // Fulfill the task promise asynchronously so the worker isn't blocked.
+                    // Capture `bodyBuf` to keep the buffer alive until the response is retrieved.
                     std::promise<WebUtils::JsonResponse> prom = std::move(task->promise);
+                    std::shared_ptr<std::vector<uint8_t>> keepAlive = bodyBuf;
                     std::thread([
                         prom = std::move(prom),
-                        resp = std::move(response)
+                        resp = std::move(response),
+                        keepAlive
                     ]() mutable {
                         try {
                             prom.set_value(resp.get());

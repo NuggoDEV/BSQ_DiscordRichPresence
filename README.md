@@ -132,7 +132,7 @@ inet 192.168.x.x/24
 ## Todo
 
 - [x] Fix level selection not detecting when pressing "continue" from result view
-- [ ] Fix heartbeats not being sent when in a beatmap
+- [x] Fix heartbeats not being sent when in a beatmap
 - [x] Fix result view being automatically switched to level selection
 - [x] Fix beatmap not showing the stats if restarted
  
